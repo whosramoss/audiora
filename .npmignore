@@ -7,10 +7,10 @@ node_modules/
 Thumbs.db
 coverage/
 tests/
-src/
 *.config.js
 *.config.ts
 tsconfig.json
 vitest.config.ts
 CONTRIBUTING.md
 SECURITY.md
+generate_commit.sh
