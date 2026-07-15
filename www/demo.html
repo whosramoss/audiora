@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>audiora</title>
+    <meta
+      name="description"
+      content="Interactive demo for audiora — picture-driven synthesis through scanning and musical rules."
+    />
+    <meta name="theme-color" content="#4820fc" />
+
+    <link rel="icon" href="./assets/favicon.ico" sizes="any" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="./assets/favicon-16x16.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="./assets/favicon-32x32.png"
+    />
+    <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="./assets/android-chrome-192x192.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="512x512"
+      href="./assets/android-chrome-512x512.png"
+    />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="audiora " />
+    <meta
+      property="og:description"
+      content="Interactive demo for audiora — picture-driven synthesis through scanning and musical rules."
+    />
+    <meta property="og:image" content="./assets/thumbnail.png" />
+    <meta property="og:image:alt" content="audiora" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="audiora " />
+    <meta
+      name="twitter:description"
+      content="Interactive demo for audiora — picture-driven synthesis through scanning and musical rules."
+    />
+    <meta name="twitter:image" content="./assets/thumbnail.png" />
+
+    <link rel="stylesheet" href="/src/global.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="ctrl-panel">
+        <header class="brand">
+          <a href="./index.html" aria-label="audiora home">
+            <img src="./assets/logo.svg" alt="audiora" />
+          </a>
+        </header>
+        <div class="ctrl-top">
+          <button id="play_btn" class="action-btn">Play</button>
+          <label class="action-btn">
+            Upload image
+            <input type="file" accept="image/*" id="file_input" />
+          </label>
+          <button id="warm_btn" class="action-btn">Warm Up Audio</button>
+        </div>
+
+        <div class="presets" id="preset_row"></div>
+
+        <div class="ctrl-groups">
+          <div class="ctrl-group">
+            <h2 class="group-label">Playback</h2>
+            <div class="ctrl-grid">
+              <div class="field">
+                <label class="label" for="volume"
+                  >Volume <span id="volume_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="volume"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value="0.99"
+                />
+              </div>
+              <div class="field">
+                <label class="label" for="bpm"
+                  >BPM <span id="bpm_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="bpm"
+                  min="40"
+                  max="240"
+                  step="1"
+                  value="70"
+                />
+              </div>
+              <div class="field">
+                <label class="label" for="speed"
+                  >Steps / beat <span id="speed_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="speed"
+                  min="0.25"
+                  max="8"
+                  step="0.25"
+                  value="4.25"
+                />
+              </div>
+              <div class="field">
+                <label class="label" for="note_mult"
+                  >Note length <span id="note_mult_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="note_mult"
+                  min="0.2"
+                  max="3"
+                  step="0.05"
+                  value="0.2"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="ctrl-group">
+            <h2 class="group-label">Synthesis</h2>
+            <div class="ctrl-grid">
+              <div class="field">
+                <label class="label" for="osc_type">Oscillator</label>
+                <select id="osc_type">
+                  <option value="sine">Sine</option>
+                  <option value="square">Square</option>
+                  <option value="sawtooth">Sawtooth</option>
+                  <option value="triangle" selected>Triangle</option>
+                  <option value="pulse">Pulse</option>
+                  <option value="organ">Organ</option>
+                  <option value="bell">Bell</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="label" for="scale_name">Scale</label>
+                <select id="scale_name">
+                  <option value="Major">Major</option>
+                  <option value="Minor" selected>Minor</option>
+                  <option value="Pentatonic">Pentatonic</option>
+                  <option value="Blues">Blues</option>
+                  <option value="Chromatic">Chromatic</option>
+                  <option value="Whole Tone">Whole Tone</option>
+                  <option value="Dorian">Dorian</option>
+                  <option value="Phrygian">Phrygian</option>
+                  <option value="Lydian">Lydian</option>
+                  <option value="Harmonic Minor">Harmonic Minor</option>
+                  <option value="In Sen">In Sen</option>
+                </select>
+              </div>
+              <div class="field field--wide">
+                <label class="label" for="base_note"
+                  >Base note <span id="base_note_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="base_note"
+                  min="110"
+                  max="880"
+                  step="1"
+                  value="287"
+                />
+              </div>
+              <div class="field">
+                <label class="label" for="fifth_lvl"
+                  >5th level <span id="fifth_lvl_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="fifth_lvl"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value="0.37"
+                />
+              </div>
+              <div class="field">
+                <label class="label" for="oct_lvl"
+                  >Octave level <span id="oct_lvl_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="oct_lvl"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value="0.63"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="ctrl-group">
+            <h2 class="group-label">Modulation</h2>
+            <div class="ctrl-grid">
+              <div class="field">
+                <label class="label" for="vibrato_rate"
+                  >Vibrato rate <span id="vibrato_rate_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="vibrato_rate"
+                  min="0"
+                  max="12"
+                  step="0.1"
+                  value="0"
+                />
+              </div>
+              <div class="field">
+                <label class="label" for="vibrato_depth"
+                  >Vibrato depth <span id="vibrato_depth_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="vibrato_depth"
+                  min="0"
+                  max="50"
+                  step="1"
+                  value="50"
+                />
+              </div>
+              <div class="field">
+                <label class="label" for="tremolo_rate"
+                  >Tremolo rate <span id="tremolo_rate_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="tremolo_rate"
+                  min="0"
+                  max="20"
+                  step="0.1"
+                  value="1.8"
+                />
+              </div>
+              <div class="field">
+                <label class="label" for="tremolo_depth"
+                  >Tremolo depth <span id="tremolo_depth_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="tremolo_depth"
+                  min="0"
+                  max="0.95"
+                  step="0.01"
+                  value="0"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="ctrl-group">
+            <h2 class="group-label">Filter</h2>
+            <div class="ctrl-grid">
+              <div class="field">
+                <label class="label" for="filter_base"
+                  >Base <span id="filter_base_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="filter_base"
+                  min="100"
+                  max="4000"
+                  step="10"
+                  value="1810"
+                />
+              </div>
+              <div class="field">
+                <label class="label" for="filter_track"
+                  >Tracking <span id="filter_track_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="filter_track"
+                  min="0"
+                  max="6000"
+                  step="10"
+                  value="0"
+                />
+              </div>
+              <div class="field">
+                <label class="label" for="resonance"
+                  >Resonance <span id="resonance_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="resonance"
+                  min="0.3"
+                  max="10"
+                  step="0.1"
+                  value="2.6"
+                />
+              </div>
+              <div class="field">
+                <label class="label" for="bass_gain"
+                  >Bass boost <span id="bass_gain_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="bass_gain"
+                  min="-6"
+                  max="18"
+                  step="0.5"
+                  value="13.5"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="ctrl-group">
+            <h2 class="group-label">Reverb</h2>
+            <div class="ctrl-grid">
+              <div class="field">
+                <label class="label" for="reverb_mix"
+                  >Mix <span id="reverb_mix_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="reverb_mix"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value="1"
+                />
+              </div>
+              <div class="field">
+                <label class="label" for="reverb_time"
+                  >Time <span id="reverb_time_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="reverb_time"
+                  min="0.2"
+                  max="6"
+                  step="0.1"
+                  value="3.6"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="ctrl-group">
+            <h2 class="group-label">Grid & Scan</h2>
+            <div class="ctrl-grid">
+              <div class="field">
+                <label class="label" for="block_w"
+                  >Block width <span id="block_w_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="block_w"
+                  min="1"
+                  max="64"
+                  step="1"
+                  value="23"
+                />
+              </div>
+              <div class="field">
+                <label class="label" for="block_h"
+                  >Block height <span id="block_h_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="block_h"
+                  min="1"
+                  max="64"
+                  step="1"
+                  value="13"
+                />
+              </div>
+              <div class="field">
+                <label class="label" for="scan_mode">Scan pattern</label>
+                <select id="scan_mode">
+                  <option value="linear">Linear ?</option>
+                  <option value="vertical">Vertical ?</option>
+                  <option value="zigzag">Zigzag ?</option>
+                  <option value="drift">Drift ?</option>
+                  <option value="spiral">Spiral ?</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="label" for="timing_mode">Timing</label>
+                <select id="timing_mode">
+                  <option value="expressive">Expressive</option>
+                  <option value="stable">Stable</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="label" for="timing_intensity"
+                  >Breathe <span id="timing_intensity_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="timing_intensity"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value="1"
+                />
+              </div>
+              <div class="field">
+                <label class="label" for="pan_amount"
+                  >Pan spread <span id="pan_amount_val"></span
+                ></label>
+                <input
+                  type="range"
+                  id="pan_amount"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value="0.6"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="viz-stage">
+        <div class="viz-stack">
+          <canvas id="map_canvas"></canvas>
+          <canvas id="wave_canvas"></canvas>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>audiora</title>
+    <meta
+      name="description"
+      content="Maps color and light into pitch, timing, and texture through scanning and musical rules."
+    />
+    <meta name="theme-color" content="#4820fc" />
+
+    <link rel="icon" href="./assets/favicon.ico" sizes="any" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="./assets/favicon-16x16.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="./assets/favicon-32x32.png"
+    />
+    <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="./assets/android-chrome-192x192.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="512x512"
+      href="./assets/android-chrome-512x512.png"
+    />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="audiora" />
+    <meta
+      property="og:description"
+      content="Maps color and light into pitch, timing, and texture through scanning and musical rules."
+    />
+    <meta property="og:image" content="./assets/thumbnail.png" />
+    <meta property="og:image:alt" content="audiora" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="audiora" />
+    <meta
+      name="twitter:description"
+      content="Maps color and light into pitch, timing, and texture through scanning and musical rules."
+    />
+    <meta name="twitter:image" content="./assets/thumbnail.png" />
+
+    <link rel="stylesheet" href="/src/landing.css" />
+  </head>
+  <body>
+    <canvas id="wave_bg" class="landing__wave" aria-hidden="true"></canvas>
+    <main class="landing">
+      <div class="landing__top">
+        <div class="landing__content">
+          <p class="landing__lede">
+            Maps color and light into pitch, timing, and texture through
+            scanning and musical rules.
+          </p>
+        </div>
+
+        <ul class="landing__links">
+          <li>
+            <a href="https://www.npmjs.com/package/audiora">npm @audiora</a>
+          </li>
+          <li><a href="./demo.html">demo</a></li>
+        </ul>
+      </div>
+
+      <div class="landing__brand">
+        <img src="./assets/logo.svg" alt="audiora" />
+      </div>
+    </main>
+    <script type="module" src="/src/landing.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,142 @@
+@import url("https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700;800&display=swap");
+
+:where(*, *::before, *::after) {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --primary: #4820fc;
+  --secondary-light: #ffffff;
+  --font: "Urbanist", sans-serif;
+  --pad: clamp(1.5rem, 4vw, 3rem);
+}
+
+html {
+  color-scheme: dark;
+  block-size: 100%;
+  overflow: hidden;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  background: var(--primary);
+  block-size: 100%;
+  color: var(--secondary-light);
+  font-family: var(--font);
+  overflow: hidden;
+  position: relative;
+}
+
+.landing__wave {
+  block-size: 100%;
+  inline-size: 100%;
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: 0;
+}
+
+.landing {
+  display: flex;
+  flex-direction: column;
+  block-size: 100dvh;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.landing__top {
+  align-items: flex-start;
+  display: flex;
+  flex-shrink: 0;
+  gap: 1.5rem;
+  justify-content: space-between;
+  padding: var(--pad);
+  padding-block-end: 1rem;
+}
+
+.landing__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-inline-size: 42rem;
+  min-inline-size: 0;
+}
+
+.landing__lede {
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  font-weight: 400;
+  line-height: 1.45;
+  max-inline-size: 26rem;
+}
+
+.landing__links {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.landing__links a {
+  background: var(--secondary-light);
+  border-radius: 999px;
+  color: var(--primary);
+  display: inline-block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0.55rem 1.1rem;
+  text-decoration: none;
+  transition:
+    opacity 0.15s,
+    transform 0.15s;
+}
+
+.landing__links a:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.landing__brand {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  inline-size: 100%;
+  min-block-size: 0;
+  overflow: hidden;
+  padding-block-end: var(--pad);
+  padding-inline: var(--pad);
+}
+
+.landing__brand img {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  max-block-size: 100%;
+  object-fit: contain;
+  object-position: bottom center;
+}
+
+@media (width <= 44em) {
+  .landing__top {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .landing__content,
+  .landing__lede {
+    inline-size: 100%;
+    max-inline-size: none;
+  }
+
+  .landing__links {
+    inline-size: 100%;
+    justify-content: flex-start;
+  }
+}
