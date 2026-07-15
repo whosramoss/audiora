@@ -1,11 +1,37 @@
 {
   "name": "audiora",
   "version": "1.0.0",
+  "description": "Picture-driven synthesis for the web — maps color and light into pitch, timing, and texture.",
+  "keywords": [
+    "audio",
+    "web-audio",
+    "synthesis",
+    "picture-driven",
+    "canvas",
+    "typescript",
+    "music",
+    "instrument"
+  ],
+  "license": "MIT",
+  "author": "whosramoss",
   "type": "module",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "exports": {
     ".": "./src/index.ts"
+  },
+  "files": [
+    "src",
+    "docs",
+    "CHANGELOG.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/whosramoss/audiora.git"
+  },
+  "homepage": "https://github.com/whosramoss/audiora#readme",
+  "bugs": {
+    "url": "https://github.com/whosramoss/audiora/issues"
   },
   "devDependencies": {
     "typescript": "^5.5.0"

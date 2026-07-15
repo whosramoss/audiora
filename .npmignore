@@ -7,7 +7,6 @@ node_modules/
 Thumbs.db
 coverage/
 tests/
-src/
 *.config.js
 *.config.ts
 tsconfig.json

@@ -1,6 +1,6 @@
 <h1>
   <p align="center">
-    <img src="./www/assets/android-chrome-512x512.png" alt="logo" width="128">
+    <img src="https://raw.githubusercontent.com/whosramoss/audiora/main/www/assets/android-chrome-512x512.png" alt="logo" width="128">
     <br>audiora
   </p>
 </h1>
@@ -47,7 +47,7 @@ const blob = await audiora.toBlob({
 
 Importing `audiora` has no side effects — it does not create an `AudioContext` or touch the DOM until you call methods.
 
-See the **[API reference](./docs/API.md)** for constructors, params, presets, scan modes, and TypeScript types.
+See the **[API reference](https://github.com/whosramoss/audiora/blob/main/docs/API.md)** for constructors, params, presets, scan modes, and TypeScript types.
 
 ### Live shell (demo)
 
