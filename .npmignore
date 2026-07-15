@@ -1,0 +1,16 @@
+www/
+node_modules/
+*.log
+.env
+.env.*
+.DS_Store
+Thumbs.db
+coverage/
+tests/
+src/
+*.config.js
+*.config.ts
+tsconfig.json
+vitest.config.ts
+CONTRIBUTING.md
+SECURITY.md
