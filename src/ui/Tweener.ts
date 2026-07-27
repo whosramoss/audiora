@@ -52,7 +52,11 @@ export class Tweener {
         this.engine.dry!.gain.value = this.engine.dryVal(this.state.reverb_mix);
       }
 
-      if (t < 1) this.raf = requestAnimationFrame(tick);
+      if (t < 1) {
+        this.raf = requestAnimationFrame(tick);
+      } else if (from.reverb_time !== undefined) {
+        this.engine.updateReverbBuffer(this.state);
+      }
     };
 
     this.raf = requestAnimationFrame(tick);
