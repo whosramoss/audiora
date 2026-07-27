@@ -282,6 +282,9 @@ async function resolveImageElement(image: ImageSource): Promise<HTMLImageElement
 
 function waitForImage(img: HTMLImageElement): Promise<HTMLImageElement> {
   if (img.complete && img.naturalWidth > 0) return Promise.resolve(img);
+  if (img.complete && img.naturalWidth === 0) {
+    return Promise.reject(new Error("Failed to load image"));
+  }
   return new Promise((resolve, reject) => {
     img.addEventListener("load", () => resolve(img), { once: true });
     img.addEventListener(
