@@ -1,6 +1,6 @@
 {
   "name": "audiora",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Picture-driven synthesis for the web — maps color and light into pitch, timing, and texture.",
   "keywords": [
     "audio",
