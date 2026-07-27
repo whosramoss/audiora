@@ -13,6 +13,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [1.0.1] - 2026-07-27
+
+### Fixed
+
+- Reject image loading when `naturalWidth` is 0 in `waitForImage`, instead of hanging indefinitely.
+- Apply reverb buffer updates after tween completes when `reverb_time` changes.
+
+### Changed
+
+- Updated homepage URL in `package.json`.
+- Updated README and API documentation.
+
 ## [1.0.0] - 2026-07-15
 
 ### Added
@@ -26,4 +38,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - UI helpers: `FORMAT`, `RANGE_KEYS`, `SELECT_KEYS`, `DEFAULT_PRESET`.
 - API reference in `docs/API.md`.
 
+[1.0.1]: https://github.com/whosramoss/audiora/releases/tag/v1.0.1
 [1.0.0]: https://github.com/whosramoss/audiora/releases/tag/v1.0.0
