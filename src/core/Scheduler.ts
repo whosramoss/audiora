@@ -5,6 +5,7 @@ import { Sequencer } from "./Scanner";
 import { BlockGrid } from "./ImageProcessor";
 import { SCALES } from "./constants";
 import { clamp, midiToFreq, freqToMidi } from "./utils";
+import type { AudioraNotePlayEvent } from "./events";
 
 export class Scheduler {
   private raf: number | null = null;
@@ -14,7 +15,8 @@ export class Scheduler {
     private readonly engine: AudioEngine,
     private readonly synth: Synthesizer,
     private readonly seq: Sequencer,
-    private readonly grid: BlockGrid
+    private readonly grid: BlockGrid,
+    private readonly onNotePlay?: (detail: AudioraNotePlayEvent["detail"]) => void,
   ) {}
 
   public start(): void {
@@ -89,12 +91,26 @@ export class Scheduler {
         this.seq.lastL = block.l;
         const note = Sequencer.mapBlockToNote(block, sc, this.state);
         this.synth.scheduleNote(note.freq, note.vel, note.brightness, note.pan, time);
+        this.onNotePlay?.({
+          freq: note.freq,
+          vel: note.vel,
+          pan: note.pan,
+          blockIndex: idx,
+          timestamp: time,
+        });
       }
     } else {
       const deg = Math.floor(((this.seq.x % 64) / 64) * (sc.intervals.length - 1));
       const freq = midiToFreq(freqToMidi(this.state.base_note) + sc.intervals[deg]);
       this.seq.lastL = 50;
       this.synth.scheduleNote(freq, 0.6, 0.5, 0, time);
+      this.onNotePlay?.({
+        freq,
+        vel: 0.6,
+        pan: 0,
+        blockIndex: -1,
+        timestamp: time,
+      });
     }
 
     this.seq.visX = this.seq.x;

@@ -9,8 +9,10 @@ import { PresetData } from "./core/types";
 import { KEY, SCALES } from "./core/constants";
 import { Tweener, TweenTickHandler } from "./ui/Tweener";
 import { Renderer } from "./ui/Renderer";
+import { resolveImageElement, type ImageSource } from "./core/image";
+import type { AudioraEventMap, AudioraEventType } from "./core/events";
 
-export type ImageSource = string | File | Blob | HTMLImageElement;
+export type { ImageSource };
 
 export interface RenderOptions {
   image?: ImageSource;
@@ -29,7 +31,30 @@ const DEFAULT_DURATION_SECONDS = 10;
 const DEFAULT_SAMPLE_RATE = 44100;
 const OUTPUT_CHANNELS = 2;
 
-export class Audiora {
+export interface Audiora {
+  addEventListener<K extends AudioraEventType>(
+    type: K,
+    listener: (this: Audiora, event: AudioraEventMap[K]) => void,
+    options?: boolean | AddEventListenerOptions,
+  ): void;
+  addEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject | null,
+    options?: boolean | AddEventListenerOptions,
+  ): void;
+  removeEventListener<K extends AudioraEventType>(
+    type: K,
+    listener: (this: Audiora, event: AudioraEventMap[K]) => void,
+    options?: boolean | EventListenerOptions,
+  ): void;
+  removeEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject | null,
+    options?: boolean | EventListenerOptions,
+  ): void;
+}
+
+export class Audiora extends EventTarget {
   private readonly state = new State();
   private readonly engine = new AudioEngine();
   private readonly imageProcessor = new ImageProcessor();
@@ -41,8 +66,10 @@ export class Audiora {
   private renderer: Renderer | null = null;
   private reverbDebounce: ReturnType<typeof setTimeout> | null = null;
   private loadedImage: HTMLImageElement | null = null;
+  private playStartTime = 0;
 
   constructor(options: LiveOptions = {}) {
+    super();
     this.seq = new Sequencer(this.grid);
     this.synth = new Synthesizer(this.engine, this.state);
     this.scheduler = new Scheduler(
@@ -51,6 +78,7 @@ export class Audiora {
       this.synth,
       this.seq,
       this.grid,
+      (detail) => this.emit("noteplay", detail),
     );
     this.tweener = new Tweener(this.state, this.engine, options.onTweenTick);
 
@@ -84,31 +112,63 @@ export class Audiora {
   }
 
   public async loadImage(image: ImageSource): Promise<void> {
-    const img = await resolveImageElement(image);
-    this.loadedImage = img;
-    this.imageProcessor.processImage(img);
-    this.rebuildGrid();
+    try {
+      const img = await resolveImageElement(image);
+      this.loadedImage = img;
+      this.imageProcessor.processImage(img);
+      this.rebuildGrid();
+      this.emit("imageload", {
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+        blockCount: this.grid.list.length,
+      });
+    } catch (err) {
+      throw this.emitError(err, "loadImage");
+    }
   }
 
   public async play(): Promise<void> {
-    this.engine.ensure(this.state);
+    try {
+      this.engine.ensure(this.state);
+      if (!this.engine.ctx) {
+        throw new Error("Web Audio API is not available");
+      }
+      if (this.state.playing) return;
+      await this.engine.resume();
+    } catch (err) {
+      throw this.emitError(err, "play");
+    }
+
     if (!this.engine.ctx || this.state.playing) return;
-    await this.engine.resume();
+
     this.state.playing = true;
+    this.playStartTime = this.engine.ctx.currentTime;
     this.scheduler.start();
+    this.emit("start", { timestamp: this.engine.ctx.currentTime });
   }
 
   public stop(): void {
+    if (!this.state.playing) return;
+
+    const timestamp = this.engine.ctx?.currentTime ?? 0;
+    const duration = timestamp - this.playStartTime;
+
     this.state.playing = false;
     this.seq.nextTime = 0;
     this.seq.active = false;
     this.seq.activateAt = 0;
     this.scheduler.stop();
     this.engine.suspend();
+
+    this.emit("stop", { timestamp, duration });
   }
 
   public async warmUp(): Promise<void> {
-    await this.engine.warmUp(this.state);
+    try {
+      await this.engine.warmUp(this.state);
+    } catch (err) {
+      throw this.emitError(err, "warmUp");
+    }
   }
 
   public getParam(key: keyof PresetData): string | number {
@@ -150,6 +210,19 @@ export class Audiora {
   }
 
   public async toAudioBuffer(options: RenderOptions = {}): Promise<AudioBuffer> {
+    try {
+      return await this.renderOffline(options);
+    } catch (err) {
+      throw this.emitError(err, "toAudioBuffer");
+    }
+  }
+
+  public async toBlob(options: RenderOptions = {}): Promise<Blob> {
+    const buffer = await this.toAudioBuffer(options);
+    return audioBufferToWavBlob(buffer);
+  }
+
+  private async renderOffline(options: RenderOptions): Promise<AudioBuffer> {
     const {
       duration = DEFAULT_DURATION_SECONDS,
       sampleRate = DEFAULT_SAMPLE_RATE,
@@ -186,11 +259,6 @@ export class Audiora {
     scheduler.renderRange(0, duration);
 
     return ctx.startRendering();
-  }
-
-  public async toBlob(options: RenderOptions = {}): Promise<Blob> {
-    const buffer = await this.toAudioBuffer(options);
-    return audioBufferToWavBlob(buffer);
   }
 
   private rebuildGrid(): void {
@@ -257,40 +325,17 @@ export class Audiora {
     }
     this.engine.updateReverbBuffer(this.state);
   }
-}
 
-async function resolveImageElement(image: ImageSource): Promise<HTMLImageElement> {
-  if (image instanceof HTMLImageElement) return waitForImage(image);
-
-  const isBlobSource = image instanceof Blob;
-  const src = isBlobSource ? URL.createObjectURL(image) : image;
-  const img = new Image();
-  if (!isBlobSource) img.crossOrigin = "anonymous";
-
-  return new Promise((resolve, reject) => {
-    img.onload = () => {
-      if (isBlobSource) URL.revokeObjectURL(src);
-      resolve(img);
-    };
-    img.onerror = () => {
-      if (isBlobSource) URL.revokeObjectURL(src);
-      reject(new Error(`Failed to load image: ${isBlobSource ? "blob" : src}`));
-    };
-    img.src = src;
-  });
-}
-
-function waitForImage(img: HTMLImageElement): Promise<HTMLImageElement> {
-  if (img.complete && img.naturalWidth > 0) return Promise.resolve(img);
-  if (img.complete && img.naturalWidth === 0) {
-    return Promise.reject(new Error("Failed to load image"));
+  private emit<K extends AudioraEventType>(
+    type: K,
+    detail: AudioraEventMap[K]["detail"],
+  ): void {
+    this.dispatchEvent(new CustomEvent(type, { detail }));
   }
-  return new Promise((resolve, reject) => {
-    img.addEventListener("load", () => resolve(img), { once: true });
-    img.addEventListener(
-      "error",
-      () => reject(new Error("Failed to load image")),
-      { once: true },
-    );
-  });
+
+  private emitError(error: unknown, context: string): Error {
+    const err = error instanceof Error ? error : new Error(String(error));
+    this.emit("error", { error: err, context });
+    return err;
+  }
 }

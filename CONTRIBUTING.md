@@ -5,20 +5,24 @@ Thank you for your interest in contributing. Audiora is a small picture-driven s
 ## Getting started
 
 1. Fork and clone the repository.
-2. Install dependencies for the demo app (the library package itself has no runtime dependencies):
+2. Install dependencies and build the library (the published package has no runtime dependencies):
 
    ```bash
+   npm install
+   npm run build
    cd www
    npm install
    npm run dev
    ```
 
-3. Library source lives in `src/` at the repository root (`Audiora`, audio engine, scanner, presets). The `www/` folder is a Vite landing + instrument shell and is **not** published to npm.
+   Use `npm run dev` at the repository root to rebuild `dist/` on source changes. The `www/` demo consumes that build via the `audiora` package entry.
+
+3. Library source lives in `src/` at the repository root (`Audiora`, audio engine, scanner, presets). npm publishes `dist/` only. The `www/` folder is a Vite landing + instrument shell and is **not** published to npm.
 
 ## Development workflow
 
 1. Create a branch from `main`.
-2. Make your changes in `src/` (or `www/` for demo-only UI).
+2. Make your changes in `src/` (or `www/` for demo-only UI). Rebuild with `npm run build` or keep `npm run dev` running so `dist/` stays current.
 3. Verify live playback and, when relevant, offline render (`toAudioBuffer` / `toBlob`) in `www/`.
 4. Update `docs/API.md` for any public API, preset, or param surface change.
 5. Open a pull request with a clear description of what changed and how to hear it (preset, scan mode, image, etc.).
