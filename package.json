@@ -15,16 +15,34 @@
   "license": "MIT",
   "author": "whosramoss",
   "type": "module",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
   },
   "files": [
-    "src",
-    "docs",
+    "dist",
     "CHANGELOG.md"
   ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "prepare": "tsup",
+    "prepublishOnly": "npm run build"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/whosramoss/audiora.git"
@@ -34,6 +52,7 @@
     "url": "https://github.com/whosramoss/audiora/issues"
   },
   "devDependencies": {
+    "tsup": "^8.0.0",
     "typescript": "^5.5.0"
   }
 }

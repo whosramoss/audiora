@@ -12,7 +12,7 @@ There are no side-effectful subpaths. Importing `audiora` does not start AudioCo
 
 ## `audiora` exports
 
-Types ship with the package source entry. No separate `@types` package required.
+Types ship as generated `.d.ts` / `.d.cts` next to the compiled ESM and CJS builds. No separate `@types` package required.
 
 ```ts
 import {
