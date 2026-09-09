@@ -7,3 +7,13 @@ export {
   SELECT_KEYS,
 } from "./core/constants";
 export type { PresetData } from "./core/types";
+export type {
+  AudioraEventType,
+  AudioraStartEvent,
+  AudioraStopEvent,
+  AudioraNotePlayEvent,
+  AudioraImageLoadEvent,
+  AudioraErrorEvent,
+  AudioraEvent,
+  AudioraEventMap,
+} from "./core/events";

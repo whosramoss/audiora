@@ -26,6 +26,7 @@ import {
   type ImageSource,
   type LiveOptions,
   type PresetData,
+  type AudioraEventMap,
 } from "audiora";
 ```
 
@@ -41,6 +42,7 @@ import {
 | `ImageSource`    | `type`                       | `string`, `File`, `Blob`, or `HTMLImageElement`.                                 |
 | `LiveOptions`    | `type`                       | Optional canvases + tween callback for the constructor.                          |
 | `PresetData`     | `type`                       | Full parameter set that drives synthesis and traversal.                          |
+| `AudioraEventMap` | `type`                      | Typed `CustomEvent` map for `start`, `stop`, `noteplay`, `imageload`, `error`.   |
 
 ---
 
@@ -89,15 +91,17 @@ interface LiveOptions {
 | --------- | ------------------ | -------------------------------- |
 | `playing` | `boolean` (getter) | Whether live playback is active. |
 
+`Audiora` extends `EventTarget`. Use `addEventListener` / `removeEventListener` for lifecycle hooks (see [Events](#events)).
+
 ### Instance methods
 
 | Method                                 | Returns                | Description                                                           |
 | -------------------------------------- | ---------------------- | --------------------------------------------------------------------- |
 | `attachVisuals(waveCanvas, mapCanvas)` | `void`                 | Starts (or restarts) the render loop on the given canvases.           |
 | `resizeVisuals()`                      | `void`                 | Recomputes canvas sizes after layout/window resize.                   |
-| `loadImage(image)`                     | `Promise<void>`        | Loads an `ImageSource`, processes pixels, rebuilds the block grid.    |
-| `play()`                               | `Promise<void>`        | Ensures AudioContext, resumes it, starts the live scheduler. No notes until an image grid exists. |
-| `stop()`                               | `void`                 | Stops the scheduler, resets sequencer timing, suspends the context.   |
+| `loadImage(image)`                     | `Promise<void>`        | Loads an `ImageSource`, processes pixels, rebuilds the block grid. Dispatches `imageload`, or `error` then rethrows. |
+| `play()`                               | `Promise<void>`        | Ensures AudioContext, resumes it, starts the live scheduler. Dispatches `start`. No notes until an image grid exists. |
+| `stop()`                               | `void`                 | Stops the scheduler, resets sequencer timing, suspends the context. Dispatches `stop` when playback was active. |
 | `warmUp()`                             | `Promise<void>`        | Primes the audio graph (helpful before first gesture-driven `play`).  |
 | `getParam(key)`                        | `string \| number`     | Reads one `PresetData` field from live state.                         |
 | `setParam(key, value)`                 | `void`                 | Sets one param and applies side effects (volume, reverb, grid, etc.). |
@@ -128,9 +132,47 @@ interface RenderOptions {
 }
 ```
 
-Throws if no image is available (`options.image` and prior `loadImage` both missing).
+Throws if no image is available (`options.image` and prior `loadImage` both missing). Failures dispatch `error` with `context: "toAudioBuffer"` and rethrow.
 
-Stereo output: 2 channels.
+Stereo output: 2 channels. Offline render does **not** dispatch `noteplay`.
+
+### Events
+
+`Audiora` is an `EventTarget`. Timestamps on `start`, `stop`, and `noteplay` are **AudioContext time in seconds** (same clock as `AudioContext.currentTime`), not `Date.now()`.
+
+| Type         | When                                      | `detail`                                                                 |
+| ------------ | ----------------------------------------- | ------------------------------------------------------------------------ |
+| `start`      | Live playback actually begins             | `{ timestamp }`                                                          |
+| `stop`       | Live playback transitions to stopped      | `{ timestamp, duration }` — `duration` is seconds since that `start`     |
+| `noteplay`   | A live note is scheduled (lookahead)      | `{ freq, vel, pan, blockIndex, timestamp }` — `blockIndex` is `-1` if no grid |
+| `imageload`  | Image processed and block grid rebuilt    | `{ width, height, blockCount }`                                          |
+| `error`      | `loadImage`, `play`, `warmUp`, or `toAudioBuffer` fails | `{ error, context }` — then the method rethrows                |
+
+`noteplay` fires when the note is **scheduled**, slightly ahead of audible time (same lookahead as the scan cursor). Use `detail.timestamp` to sync animations to the audio clock. Idle `stop()` / `play()` while already in that state do not re-dispatch.
+
+```js
+audiora.addEventListener("start", (e) => {
+  playButton.textContent = "Stop";
+  console.log("Playback started at", e.detail.timestamp);
+});
+
+audiora.addEventListener("stop", (e) => {
+  playButton.textContent = "Play";
+  console.log("Played for", e.detail.duration, "seconds");
+});
+
+audiora.addEventListener("imageload", (e) => {
+  console.log(`Loaded ${e.detail.width}×${e.detail.height}, ${e.detail.blockCount} blocks`);
+});
+
+audiora.addEventListener("noteplay", (e) => {
+  // e.detail.freq, vel, pan, blockIndex, timestamp
+});
+
+audiora.addEventListener("error", (e) => {
+  console.error(`Error in ${e.detail.context}:`, e.detail.error);
+});
+```
 
 ### Example — live session
 
@@ -310,7 +352,8 @@ audiora.applyParams(PRESETS[DEFAULT_PRESET], { tween: false });
 
 - First `play()` may show the scan cursor slightly ahead of audio while the context starts; subsequent plays are stable.
 - The visual cursor leads audio by a small lookahead window by design (avoids audible glitches).
-- Live `play()` without a loaded image keeps the scheduler running but schedules no notes until `loadImage` builds a grid.
+- Live `play()` without a loaded image keeps the scheduler running but schedules no notes until `loadImage` builds a grid. `noteplay` uses `blockIndex: -1` in that fallback path.
+- `noteplay` is dispatched at schedule time (lookahead), not at the audible onset.
 - `reverb_mix ≥ 0.99` mutes the dry path; reduce mix to restore pan spread.
 
 ---

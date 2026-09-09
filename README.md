@@ -41,6 +41,13 @@ Minimal HTML shell for live playback (two canvases + a play gesture):
   await audiora.loadImage("/photo.jpg");
   audiora.applyParams(PRESETS.Haze, { tween: false });
 
+  audiora.addEventListener("start", () => {
+    document.getElementById("play").textContent = "Stop";
+  });
+  audiora.addEventListener("error", (e) => {
+    console.error(e.detail.context, e.detail.error);
+  });
+
   document.getElementById("play").onclick = () => audiora.play();
 
   // offline WAV — no play() needed; renders via OfflineAudioContext

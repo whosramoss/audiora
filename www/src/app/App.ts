@@ -44,6 +44,15 @@ export class App {
       this.audiora.playing ? this.stop() : this.start();
     });
 
+    this.audiora.addEventListener("start", () => {
+      this.markAudioReady();
+      this.updatePlayBtn();
+    });
+    this.audiora.addEventListener("stop", () => this.updatePlayBtn());
+    this.audiora.addEventListener("error", (event) => {
+      console.error(`Error in ${event.detail.context}:`, event.detail.error);
+    });
+
     document
       .getElementById("warm_btn")!
       .addEventListener("click", () => this.warmUp());
@@ -51,30 +60,41 @@ export class App {
     this.fileInput.addEventListener("change", async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
-      await this.audiora.loadImage(file);
+      try {
+        await this.audiora.loadImage(file);
+      } catch {
+        // surfaced via the "error" event
+      }
     });
 
     for (const id of RANGE_KEYS) this.controls.bindRange(id);
     for (const id of SELECT_KEYS) this.controls.bindSelect(id);
 
     window.addEventListener("resize", () => this.audiora.resizeVisuals());
-    void this.audiora.loadImage(defaultMapImage);
+    void this.audiora.loadImage(defaultMapImage).catch(() => {
+      // surfaced via the "error" event
+    });
   }
 
   private async start(): Promise<void> {
-    await this.audiora.play();
-    this.markAudioReady();
-    this.updatePlayBtn();
+    try {
+      await this.audiora.play();
+    } catch {
+      this.updatePlayBtn();
+    }
   }
 
   private stop(): void {
     this.audiora.stop();
-    this.updatePlayBtn();
   }
 
   private async warmUp(): Promise<void> {
-    await this.audiora.warmUp();
-    this.markAudioReady();
+    try {
+      await this.audiora.warmUp();
+      this.markAudioReady();
+    } catch {
+      // surfaced via the "error" event
+    }
   }
 
   private markAudioReady(): void {
